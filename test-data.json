@@ -1,0 +1,100 @@
+{
+  "items": [
+    {
+      "id": "task-001",
+      "title": "Project Kickoff",
+      "properties": {
+        "Start Date": "2025-01-06",
+        "End Date": "2025-01-06",
+        "Status": "Done",
+        "Progress": 100,
+        "Dependencies": "",
+        "Assignee": "Priyan"
+      }
+    },
+    {
+      "id": "task-002",
+      "title": "Requirements Gathering",
+      "properties": {
+        "Start Date": "2025-01-07",
+        "End Date": "2025-01-10",
+        "Status": "Done",
+        "Progress": 100,
+        "Dependencies": "Project Kickoff",
+        "Assignee": "Pam"
+      }
+    },
+    {
+      "id": "task-003",
+      "title": "Design Phase",
+      "properties": {
+        "Start Date": "2025-01-13",
+        "End Date": "2025-01-17",
+        "Status": "In Progress",
+        "Progress": 60,
+        "Dependencies": "Requirements Gathering",
+        "Assignee": "Priyan"
+      }
+    },
+    {
+      "id": "task-004",
+      "title": "Development Sprint 1",
+      "properties": {
+        "Start Date": "2025-01-20",
+        "End Date": "2025-01-31",
+        "Status": "Not Started",
+        "Progress": 0,
+        "Dependencies": "Design Phase",
+        "Assignee": "Galton"
+      }
+    },
+    {
+      "id": "task-005",
+      "title": "Development Sprint 2",
+      "properties": {
+        "Start Date": "2025-02-03",
+        "End Date": "2025-02-14",
+        "Status": "Not Started",
+        "Progress": 0,
+        "Dependencies": "Development Sprint 1",
+        "Assignee": "Galton"
+      }
+    },
+    {
+      "id": "task-006",
+      "title": "Testing",
+      "properties": {
+        "Start Date": "2025-02-17",
+        "End Date": "2025-02-21",
+        "Status": "Not Started",
+        "Progress": 0,
+        "Dependencies": "Development Sprint 2",
+        "Assignee": "Pam"
+      }
+    },
+    {
+      "id": "task-007",
+      "title": "User Documentation",
+      "properties": {
+        "Start Date": "2025-02-10",
+        "End Date": "2025-02-21",
+        "Status": "Not Started",
+        "Progress": 0,
+        "Dependencies": "Development Sprint 1",
+        "Assignee": "Priyan"
+      }
+    },
+    {
+      "id": "task-008",
+      "title": "Launch",
+      "properties": {
+        "Start Date": "2025-02-24",
+        "End Date": "2025-02-24",
+        "Status": "Not Started",
+        "Progress": 0,
+        "Dependencies": "Testing, User Documentation",
+        "Assignee": "Priyan"
+      }
+    }
+  ]
+}

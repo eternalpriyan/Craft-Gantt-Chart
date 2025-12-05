@@ -1,0 +1,1680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Craft Gantt</title>
+
+    <!-- Frappe Gantt -->
+    <script src="https://cdn.jsdelivr.net/npm/frappe-gantt@0.6.1/dist/frappe-gantt.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/frappe-gantt@0.6.1/dist/frappe-gantt.min.css">
+
+    <style>
+        :root {
+            /* Light theme */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f5f5f5;
+            --bg-tertiary: #e8e8e8;
+            --text-primary: #1a1a1a;
+            --text-secondary: #666666;
+            --text-muted: #999999;
+            --accent: #0066cc;
+            --accent-hover: #0052a3;
+            --bar-default: #4a90d9;
+            --bar-not-started: #9e9e9e;
+            --bar-in-progress: #f5a623;
+            --bar-done: #7ed321;
+            --bar-blocked: #d0021b;
+            --weekend-bg: #fafafa;
+            --grid-line: #e0e0e0;
+            --border-color: #ddd;
+            --modal-overlay: rgba(0, 0, 0, 0.5);
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            --toast-success: #7ed321;
+            --toast-error: #d0021b;
+            --toast-info: #4a90d9;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #1e1e1e;
+            --bg-secondary: #2d2d2d;
+            --bg-tertiary: #3d3d3d;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --text-muted: #777777;
+            --accent: #4a90d9;
+            --accent-hover: #5a9fe8;
+            --weekend-bg: #252525;
+            --grid-line: #3d3d3d;
+            --border-color: #444;
+            --modal-overlay: rgba(0, 0, 0, 0.7);
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .collection-name {
+            font-size: 14px;
+            color: var(--text-secondary);
+            padding: 4px 12px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+        }
+
+        .header-center {
+            display: flex;
+            gap: 4px;
+        }
+
+        .view-btn {
+            padding: 6px 14px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .view-btn:first-child {
+            border-radius: 4px 0 0 4px;
+        }
+
+        .view-btn:last-child {
+            border-radius: 0 4px 4px 0;
+        }
+
+        .view-btn:not(:last-child) {
+            border-right: none;
+        }
+
+        .view-btn:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .view-btn.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            font-size: 18px;
+        }
+
+        .icon-btn:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .today-btn {
+            padding: 6px 14px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 13px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .today-btn:hover {
+            background: var(--bg-tertiary);
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 20px;
+            min-height: calc(100vh - 61px);
+        }
+
+        /* Gantt Container */
+        #gantt-container {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        /* Frappe Gantt Overrides */
+        .gantt .grid-background {
+            fill: var(--bg-primary);
+        }
+
+        .gantt .grid-header {
+            fill: var(--bg-secondary);
+        }
+
+        .gantt .grid-row {
+            fill: var(--bg-primary);
+        }
+
+        .gantt .grid-row:nth-child(even) {
+            fill: var(--bg-secondary);
+        }
+
+        .gantt .row-line {
+            stroke: var(--grid-line);
+        }
+
+        .gantt .tick {
+            stroke: var(--grid-line);
+        }
+
+        .gantt .today-highlight {
+            fill: rgba(74, 144, 217, 0.1);
+        }
+
+        .gantt .lower-text, .gantt .upper-text {
+            fill: var(--text-secondary);
+            font-family: inherit;
+        }
+
+        .gantt .bar {
+            fill: var(--bar-default);
+        }
+
+        .gantt .bar-progress {
+            fill: rgba(255, 255, 255, 0.3);
+        }
+
+        .gantt .bar-label {
+            fill: white;
+            font-family: inherit;
+            font-weight: 500;
+        }
+
+        .gantt .bar-wrapper:hover .bar {
+            fill-opacity: 0.9;
+        }
+
+        .gantt .handle {
+            fill: white;
+            opacity: 0;
+        }
+
+        .gantt .bar-wrapper:hover .handle {
+            opacity: 1;
+        }
+
+        /* Status-based bar colors */
+        .gantt .bar-not-started .bar {
+            fill: var(--bar-not-started);
+        }
+
+        .gantt .bar-in-progress .bar {
+            fill: var(--bar-in-progress);
+        }
+
+        .gantt .bar-done .bar {
+            fill: var(--bar-done);
+        }
+
+        .gantt .bar-blocked .bar {
+            fill: var(--bar-blocked);
+        }
+
+        /* Arrow (dependency) styling */
+        .gantt .arrow {
+            stroke: var(--text-muted);
+            stroke-width: 1.5;
+            fill: none;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--modal-overlay);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(-20px);
+            transition: transform 0.3s;
+        }
+
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: var(--text-secondary);
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .form-help {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            display: flex;
+            gap: 4px;
+            padding: 4px;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+        }
+
+        .theme-toggle button {
+            padding: 6px 12px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .theme-toggle button.active {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .toast {
+            padding: 12px 16px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            animation: slideIn 0.3s ease;
+            border-left: 4px solid var(--toast-info);
+        }
+
+        .toast.success {
+            border-left-color: var(--toast-success);
+        }
+
+        .toast.error {
+            border-left-color: var(--toast-error);
+        }
+
+        .toast.info {
+            border-left-color: var(--toast-info);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Task Popup */
+        .task-popup {
+            position: fixed;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            padding: 16px;
+            z-index: 500;
+            min-width: 280px;
+            max-width: 350px;
+            display: none;
+            border: 1px solid var(--border-color);
+        }
+
+        .task-popup.active {
+            display: block;
+        }
+
+        .task-popup-title {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 12px;
+            padding-right: 24px;
+        }
+
+        .task-popup-close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 24px;
+            height: 24px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .task-popup-close:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .task-popup-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 13px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .task-popup-row:last-child {
+            border-bottom: none;
+        }
+
+        .task-popup-label {
+            color: var(--text-secondary);
+        }
+
+        .task-popup-value {
+            font-weight: 500;
+        }
+
+        .status-badge {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-badge.not-started {
+            background: rgba(158, 158, 158, 0.2);
+            color: var(--bar-not-started);
+        }
+
+        .status-badge.in-progress {
+            background: rgba(245, 166, 35, 0.2);
+            color: var(--bar-in-progress);
+        }
+
+        .status-badge.done {
+            background: rgba(126, 211, 33, 0.2);
+            color: var(--bar-done);
+        }
+
+        .status-badge.blocked {
+            background: rgba(208, 2, 27, 0.2);
+            color: var(--bar-blocked);
+        }
+
+        /* Welcome Screen */
+        .welcome-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .welcome-icon {
+            font-size: 64px;
+            margin-bottom: 24px;
+        }
+
+        .welcome-title {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .welcome-subtitle {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            max-width: 400px;
+        }
+
+        /* Loading */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            gap: 16px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Property Mapping Section */
+        .mapping-section {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .mapping-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .mapping-grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .mapping-row {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .mapping-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .mapping-label.required::after {
+            content: '*';
+            color: var(--bar-blocked);
+            margin-left: 4px;
+        }
+
+        /* Keyboard shortcuts hint */
+        .shortcuts-hint {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .shortcuts-hint kbd {
+            padding: 2px 6px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            font-family: inherit;
+            margin: 0 2px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+
+            .header-left, .header-center, .header-right {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .shortcuts-hint {
+                display: none;
+            }
+
+            .collection-name {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <div class="logo">Craft Gantt</div>
+            <div class="collection-name" id="collection-name">No collection selected</div>
+        </div>
+        <div class="header-center">
+            <button class="view-btn" data-view="Day">Day</button>
+            <button class="view-btn active" data-view="Week">Week</button>
+            <button class="view-btn" data-view="Month">Month</button>
+        </div>
+        <div class="header-right">
+            <button class="today-btn" id="today-btn" title="Scroll to today (T)">Today</button>
+            <button class="icon-btn" id="refresh-btn" title="Refresh (R)">&#8635;</button>
+            <button class="icon-btn" id="settings-btn" title="Settings (,)">&#9881;</button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Welcome Screen (shown when no API configured) -->
+        <div class="welcome-screen" id="welcome-screen">
+            <div class="welcome-icon">&#128202;</div>
+            <h1 class="welcome-title">Welcome to Craft Gantt</h1>
+            <p class="welcome-subtitle">Connect to your Craft collection to visualize your project timeline as an interactive Gantt chart.</p>
+            <button class="btn btn-primary" id="setup-btn">Connect to Craft</button>
+        </div>
+
+        <!-- Loading State -->
+        <div class="loading" id="loading-state" style="display: none;">
+            <div class="spinner"></div>
+            <p>Loading tasks...</p>
+        </div>
+
+        <!-- Gantt Container -->
+        <div id="gantt-container" style="display: none;">
+            <svg id="gantt"></svg>
+        </div>
+    </main>
+
+    <!-- Task Popup -->
+    <div class="task-popup" id="task-popup">
+        <button class="task-popup-close" id="task-popup-close">&times;</button>
+        <div class="task-popup-title" id="popup-title"></div>
+        <div class="task-popup-row">
+            <span class="task-popup-label">Dates</span>
+            <span class="task-popup-value" id="popup-dates"></span>
+        </div>
+        <div class="task-popup-row">
+            <span class="task-popup-label">Duration</span>
+            <span class="task-popup-value" id="popup-duration"></span>
+        </div>
+        <div class="task-popup-row">
+            <span class="task-popup-label">Progress</span>
+            <span class="task-popup-value" id="popup-progress"></span>
+        </div>
+        <div class="task-popup-row">
+            <span class="task-popup-label">Status</span>
+            <span class="task-popup-value" id="popup-status"></span>
+        </div>
+        <div class="task-popup-row" id="popup-deps-row" style="display: none;">
+            <span class="task-popup-label">Dependencies</span>
+            <span class="task-popup-value" id="popup-deps"></span>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settings-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Settings</h2>
+                <button class="modal-close" id="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Craft API URL</label>
+                    <input type="text" class="form-input" id="api-url-input"
+                           placeholder="https://connect.craft.do/links/{linkId}/api/v1">
+                    <p class="form-help">Enter your Craft Multi-Document API URL</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Collection</label>
+                    <select class="form-select" id="collection-select" disabled>
+                        <option value="">Enter API URL first</option>
+                    </select>
+                </div>
+
+                <div class="mapping-section" id="mapping-section" style="display: none;">
+                    <div class="mapping-title">Property Mapping</div>
+                    <div class="mapping-grid">
+                        <div class="mapping-row">
+                            <span class="mapping-label required">Start Date</span>
+                            <select class="form-select" id="map-start-date"></select>
+                        </div>
+                        <div class="mapping-row">
+                            <span class="mapping-label required">End Date</span>
+                            <select class="form-select" id="map-end-date"></select>
+                        </div>
+                        <div class="mapping-row">
+                            <span class="mapping-label">Dependencies</span>
+                            <select class="form-select" id="map-dependencies"></select>
+                        </div>
+                        <div class="mapping-row">
+                            <span class="mapping-label">Status</span>
+                            <select class="form-select" id="map-status"></select>
+                        </div>
+                        <div class="mapping-row">
+                            <span class="mapping-label">Progress</span>
+                            <select class="form-select" id="map-progress"></select>
+                        </div>
+                        <div class="mapping-row">
+                            <span class="mapping-label">Assignee</span>
+                            <select class="form-select" id="map-assignee"></select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 20px;">
+                    <label class="form-label">Theme</label>
+                    <div class="theme-toggle">
+                        <button id="theme-light" class="active">Light</button>
+                        <button id="theme-dark">Dark</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="settings-cancel">Cancel</button>
+                <button class="btn btn-primary" id="settings-save">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Keyboard Shortcuts Hint -->
+    <div class="shortcuts-hint">
+        <kbd>T</kbd> Today <kbd>D</kbd><kbd>W</kbd><kbd>M</kbd> View <kbd>R</kbd> Refresh <kbd>,</kbd> Settings
+    </div>
+
+    <script>
+        // ============================================
+        // Craft Gantt - Main Application
+        // ============================================
+
+        (function() {
+            'use strict';
+
+            // State
+            const state = {
+                apiUrl: '',
+                collectionId: '',
+                collectionName: '',
+                theme: 'light',
+                viewMode: 'Week',
+                propertyMapping: {
+                    startDate: '',
+                    endDate: '',
+                    dependencies: '',
+                    status: '',
+                    progress: '',
+                    assignee: ''
+                },
+                collections: [],
+                schema: null,
+                tasks: [],
+                gantt: null,
+                isLoading: false
+            };
+
+            // DOM Elements
+            const elements = {
+                welcomeScreen: document.getElementById('welcome-screen'),
+                loadingState: document.getElementById('loading-state'),
+                ganttContainer: document.getElementById('gantt-container'),
+                collectionName: document.getElementById('collection-name'),
+                settingsModal: document.getElementById('settings-modal'),
+                apiUrlInput: document.getElementById('api-url-input'),
+                collectionSelect: document.getElementById('collection-select'),
+                mappingSection: document.getElementById('mapping-section'),
+                taskPopup: document.getElementById('task-popup'),
+                toastContainer: document.getElementById('toast-container')
+            };
+
+            // ============================================
+            // Utility Functions
+            // ============================================
+
+            function formatDate(date) {
+                if (typeof date === 'string') {
+                    date = new Date(date);
+                }
+                return date.toISOString().split('T')[0];
+            }
+
+            function formatDisplayDate(dateStr) {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                });
+            }
+
+            function calculateDuration(start, end) {
+                const startDate = new Date(start);
+                const endDate = new Date(end);
+                const diffTime = Math.abs(endDate - startDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                return diffDays === 1 ? '1 day' : `${diffDays} days`;
+            }
+
+            function mapStatusToClass(status) {
+                if (!status) return 'bar-default';
+                const normalized = status.toLowerCase().replace(/\s+/g, '-');
+                const statusMap = {
+                    'not-started': 'bar-not-started',
+                    'in-progress': 'bar-in-progress',
+                    'done': 'bar-done',
+                    'completed': 'bar-done',
+                    'blocked': 'bar-blocked'
+                };
+                return statusMap[normalized] || 'bar-default';
+            }
+
+            function getStatusBadgeClass(status) {
+                if (!status) return '';
+                const normalized = status.toLowerCase().replace(/\s+/g, '-');
+                const statusMap = {
+                    'not-started': 'not-started',
+                    'in-progress': 'in-progress',
+                    'done': 'done',
+                    'completed': 'done',
+                    'blocked': 'blocked'
+                };
+                return statusMap[normalized] || '';
+            }
+
+            // ============================================
+            // Toast Notifications
+            // ============================================
+
+            function showToast(message, type = 'info', duration = 3000) {
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.textContent = message;
+                elements.toastContainer.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.style.animation = 'slideIn 0.3s ease reverse';
+                    setTimeout(() => toast.remove(), 300);
+                }, duration);
+            }
+
+            // ============================================
+            // Local Storage
+            // ============================================
+
+            function saveSettings() {
+                const settings = {
+                    apiUrl: state.apiUrl,
+                    collectionId: state.collectionId,
+                    collectionName: state.collectionName,
+                    theme: state.theme,
+                    viewMode: state.viewMode,
+                    propertyMapping: state.propertyMapping
+                };
+                localStorage.setItem('craftGanttSettings', JSON.stringify(settings));
+            }
+
+            function loadSettings() {
+                const saved = localStorage.getItem('craftGanttSettings');
+                if (saved) {
+                    const settings = JSON.parse(saved);
+                    Object.assign(state, settings);
+                    return true;
+                }
+                return false;
+            }
+
+            // ============================================
+            // Theme Management
+            // ============================================
+
+            function setTheme(theme) {
+                state.theme = theme;
+                document.documentElement.setAttribute('data-theme', theme);
+                document.getElementById('theme-light').classList.toggle('active', theme === 'light');
+                document.getElementById('theme-dark').classList.toggle('active', theme === 'dark');
+                saveSettings();
+            }
+
+            // ============================================
+            // API Functions
+            // ============================================
+
+            async function fetchWithRetry(url, options = {}, retries = 3) {
+                for (let i = 0; i < retries; i++) {
+                    try {
+                        const response = await fetch(url, options);
+
+                        if (response.status === 429) {
+                            showToast('Rate limited, retrying...', 'info');
+                            await new Promise(r => setTimeout(r, Math.pow(2, i) * 1000));
+                            continue;
+                        }
+
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
+
+                        return await response.json();
+                    } catch (error) {
+                        if (i === retries - 1) throw error;
+                        await new Promise(r => setTimeout(r, Math.pow(2, i) * 1000));
+                    }
+                }
+            }
+
+            async function fetchCollections() {
+                if (!state.apiUrl) return [];
+
+                try {
+                    const data = await fetchWithRetry(`${state.apiUrl}/collections`);
+                    return data.items || [];
+                } catch (error) {
+                    showToast('Failed to fetch collections: ' + error.message, 'error');
+                    return [];
+                }
+            }
+
+            async function fetchSchema(collectionId) {
+                if (!state.apiUrl || !collectionId) return null;
+
+                try {
+                    const data = await fetchWithRetry(
+                        `${state.apiUrl}/collections/${collectionId}/schema?format=schema`
+                    );
+                    return data;
+                } catch (error) {
+                    showToast('Failed to fetch schema: ' + error.message, 'error');
+                    return null;
+                }
+            }
+
+            async function fetchCollectionItems(collectionId) {
+                if (!state.apiUrl || !collectionId) return [];
+
+                try {
+                    const data = await fetchWithRetry(
+                        `${state.apiUrl}/collections/${collectionId}/items`
+                    );
+                    return data.items || [];
+                } catch (error) {
+                    showToast('Failed to fetch items: ' + error.message, 'error');
+                    return [];
+                }
+            }
+
+            async function updateCollectionItem(itemId, properties) {
+                if (!state.apiUrl || !state.collectionId) return false;
+
+                try {
+                    await fetchWithRetry(
+                        `${state.apiUrl}/collections/${state.collectionId}/items`,
+                        {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                itemsToUpdate: [{
+                                    id: itemId,
+                                    properties: properties
+                                }]
+                            })
+                        }
+                    );
+                    return true;
+                } catch (error) {
+                    showToast('Failed to update task: ' + error.message, 'error');
+                    return false;
+                }
+            }
+
+            // ============================================
+            // Property Mapping
+            // ============================================
+
+            function autoDetectPropertyMapping(schema) {
+                const mapping = {
+                    startDate: '',
+                    endDate: '',
+                    dependencies: '',
+                    status: '',
+                    progress: '',
+                    assignee: ''
+                };
+
+                if (!schema || !schema.properties) return mapping;
+
+                for (const prop of schema.properties) {
+                    const name = prop.name.toLowerCase();
+                    const type = prop.type;
+
+                    // Start Date detection
+                    if (type === 'date' && (name.includes('start') || name === 'begin' || name === 'from')) {
+                        mapping.startDate = prop.name;
+                    }
+                    // End Date detection
+                    else if (type === 'date' && (name.includes('end') || name === 'due' || name === 'to' || name === 'deadline')) {
+                        mapping.endDate = prop.name;
+                    }
+                    // If only one date field and no specific match
+                    else if (type === 'date' && !mapping.startDate) {
+                        mapping.startDate = prop.name;
+                    }
+                    // Dependencies detection
+                    else if (name.includes('depend') || name.includes('block') || name.includes('prerequisite')) {
+                        mapping.dependencies = prop.name;
+                    }
+                    // Status detection
+                    else if ((type === 'singleSelect' || type === 'select') &&
+                             (name.includes('status') || name === 'state')) {
+                        mapping.status = prop.name;
+                    }
+                    // Progress detection
+                    else if (type === 'number' && (name.includes('progress') || name.includes('percent') || name === 'completion')) {
+                        mapping.progress = prop.name;
+                    }
+                    // Assignee detection
+                    else if (name.includes('assign') || name === 'owner' || name === 'person' || name === 'responsible') {
+                        mapping.assignee = prop.name;
+                    }
+                }
+
+                return mapping;
+            }
+
+            function populateMappingDropdowns(schema) {
+                const mappingFields = ['map-start-date', 'map-end-date', 'map-dependencies',
+                                       'map-status', 'map-progress', 'map-assignee'];
+                const mappingKeys = ['startDate', 'endDate', 'dependencies', 'status', 'progress', 'assignee'];
+
+                if (!schema || !schema.properties) {
+                    mappingFields.forEach(id => {
+                        const select = document.getElementById(id);
+                        select.innerHTML = '<option value="">No properties available</option>';
+                    });
+                    return;
+                }
+
+                mappingFields.forEach((id, index) => {
+                    const select = document.getElementById(id);
+                    const key = mappingKeys[index];
+
+                    select.innerHTML = '<option value="">-- Select --</option>';
+
+                    for (const prop of schema.properties) {
+                        const option = document.createElement('option');
+                        option.value = prop.name;
+                        option.textContent = `${prop.name} (${prop.type})`;
+                        select.appendChild(option);
+                    }
+
+                    // Set current mapping
+                    if (state.propertyMapping[key]) {
+                        select.value = state.propertyMapping[key];
+                    }
+                });
+            }
+
+            function getMappingFromForm() {
+                return {
+                    startDate: document.getElementById('map-start-date').value,
+                    endDate: document.getElementById('map-end-date').value,
+                    dependencies: document.getElementById('map-dependencies').value,
+                    status: document.getElementById('map-status').value,
+                    progress: document.getElementById('map-progress').value,
+                    assignee: document.getElementById('map-assignee').value
+                };
+            }
+
+            // ============================================
+            // Gantt Chart
+            // ============================================
+
+            function transformTasksForGantt(items) {
+                const tasks = [];
+                const taskMap = new Map();
+
+                // First pass: create task map for dependency resolution
+                items.forEach(item => {
+                    taskMap.set(item.title, item.id);
+                    // Also map by ID for ID-based dependencies
+                    taskMap.set(item.id, item.id);
+                });
+
+                // Second pass: transform tasks
+                items.forEach(item => {
+                    const props = item.properties || {};
+                    const mapping = state.propertyMapping;
+
+                    const startDate = props[mapping.startDate];
+                    const endDate = props[mapping.endDate];
+
+                    // Skip items without required dates
+                    if (!startDate || !endDate) return;
+
+                    // Resolve dependencies (can be comma-separated titles or IDs)
+                    let dependencies = '';
+                    if (mapping.dependencies && props[mapping.dependencies]) {
+                        const deps = props[mapping.dependencies].split(',')
+                            .map(d => d.trim())
+                            .filter(d => d)
+                            .map(d => taskMap.get(d) || d)
+                            .filter(d => d !== item.id); // Prevent self-reference
+                        dependencies = deps.join(', ');
+                    }
+
+                    const status = mapping.status ? props[mapping.status] : null;
+                    const progress = mapping.progress ? (props[mapping.progress] || 0) : 0;
+
+                    tasks.push({
+                        id: item.id,
+                        name: item.title,
+                        start: startDate,
+                        end: endDate,
+                        progress: Math.min(100, Math.max(0, progress)),
+                        dependencies: dependencies,
+                        custom_class: mapStatusToClass(status),
+                        // Store additional data for popup
+                        _status: status,
+                        _assignee: mapping.assignee ? props[mapping.assignee] : null,
+                        _rawDeps: mapping.dependencies ? props[mapping.dependencies] : null
+                    });
+                });
+
+                return tasks;
+            }
+
+            function renderGantt(tasks) {
+                if (tasks.length === 0) {
+                    showToast('No tasks with valid dates found', 'info');
+                    return;
+                }
+
+                state.tasks = tasks;
+
+                // Clear existing gantt
+                const ganttElement = document.getElementById('gantt');
+                ganttElement.innerHTML = '';
+
+                try {
+                    state.gantt = new Gantt('#gantt', tasks, {
+                        view_mode: state.viewMode,
+                        date_format: 'YYYY-MM-DD',
+                        popup_trigger: 'click',
+                        custom_popup_html: null, // We use our own popup
+                        on_click: (task) => showTaskPopup(task),
+                        on_date_change: async (task, start, end) => {
+                            const mapping = state.propertyMapping;
+                            const properties = {};
+                            properties[mapping.startDate] = formatDate(start);
+                            properties[mapping.endDate] = formatDate(end);
+
+                            const success = await updateCollectionItem(task.id, properties);
+                            if (success) {
+                                showToast('Task dates updated', 'success');
+                            }
+                        },
+                        on_progress_change: async (task, progress) => {
+                            if (!state.propertyMapping.progress) return;
+
+                            const properties = {};
+                            properties[state.propertyMapping.progress] = Math.round(progress);
+
+                            const success = await updateCollectionItem(task.id, properties);
+                            if (success) {
+                                showToast('Progress updated', 'success');
+                            }
+                        }
+                    });
+
+                    elements.ganttContainer.style.display = 'block';
+                    elements.welcomeScreen.style.display = 'none';
+                    elements.loadingState.style.display = 'none';
+                } catch (error) {
+                    console.error('Gantt render error:', error);
+                    showToast('Failed to render Gantt chart', 'error');
+                }
+            }
+
+            function showTaskPopup(task) {
+                const popup = elements.taskPopup;
+
+                document.getElementById('popup-title').textContent = task.name;
+                document.getElementById('popup-dates').textContent =
+                    `${formatDisplayDate(task.start)} - ${formatDisplayDate(task.end)}`;
+                document.getElementById('popup-duration').textContent =
+                    calculateDuration(task.start, task.end);
+                document.getElementById('popup-progress').textContent = `${task.progress}%`;
+
+                const statusEl = document.getElementById('popup-status');
+                if (task._status) {
+                    statusEl.innerHTML = `<span class="status-badge ${getStatusBadgeClass(task._status)}">${task._status}</span>`;
+                } else {
+                    statusEl.textContent = '-';
+                }
+
+                const depsRow = document.getElementById('popup-deps-row');
+                if (task._rawDeps) {
+                    depsRow.style.display = 'flex';
+                    document.getElementById('popup-deps').textContent = task._rawDeps;
+                } else {
+                    depsRow.style.display = 'none';
+                }
+
+                // Position popup near cursor
+                popup.classList.add('active');
+
+                // Center in viewport
+                popup.style.left = '50%';
+                popup.style.top = '50%';
+                popup.style.transform = 'translate(-50%, -50%)';
+            }
+
+            function hideTaskPopup() {
+                elements.taskPopup.classList.remove('active');
+            }
+
+            // ============================================
+            // View Mode
+            // ============================================
+
+            function setViewMode(mode) {
+                state.viewMode = mode;
+
+                document.querySelectorAll('.view-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.view === mode);
+                });
+
+                if (state.gantt) {
+                    state.gantt.change_view_mode(mode);
+                }
+
+                saveSettings();
+            }
+
+            function scrollToToday() {
+                if (state.gantt) {
+                    // Frappe Gantt doesn't have a direct scroll_to_today method
+                    // We need to trigger a re-render at today's date
+                    const today = new Date();
+                    const ganttElement = document.querySelector('.gantt-container');
+                    if (ganttElement) {
+                        // Find today line and scroll to it
+                        const todayHighlight = document.querySelector('.today-highlight');
+                        if (todayHighlight) {
+                            todayHighlight.scrollIntoView({ behavior: 'smooth', inline: 'center' });
+                        }
+                    }
+                }
+            }
+
+            // ============================================
+            // Settings Modal
+            // ============================================
+
+            function openSettingsModal() {
+                elements.apiUrlInput.value = state.apiUrl;
+                setTheme(state.theme);
+
+                if (state.collections.length > 0) {
+                    populateCollectionSelect(state.collections);
+                }
+
+                if (state.schema) {
+                    elements.mappingSection.style.display = 'block';
+                    populateMappingDropdowns(state.schema);
+                }
+
+                elements.settingsModal.classList.add('active');
+            }
+
+            function closeSettingsModal() {
+                elements.settingsModal.classList.remove('active');
+            }
+
+            function populateCollectionSelect(collections) {
+                const select = elements.collectionSelect;
+                select.innerHTML = '<option value="">Select a collection</option>';
+
+                collections.forEach(col => {
+                    const option = document.createElement('option');
+                    option.value = col.key;
+                    option.textContent = col.name;
+                    if (col.key === state.collectionId) {
+                        option.selected = true;
+                    }
+                    select.appendChild(option);
+                });
+
+                select.disabled = false;
+            }
+
+            // ============================================
+            // Main Load Function
+            // ============================================
+
+            async function loadGantt() {
+                if (!state.apiUrl || !state.collectionId) {
+                    elements.welcomeScreen.style.display = 'flex';
+                    elements.ganttContainer.style.display = 'none';
+                    return;
+                }
+
+                elements.welcomeScreen.style.display = 'none';
+                elements.loadingState.style.display = 'flex';
+                elements.ganttContainer.style.display = 'none';
+
+                // Fetch schema if not already loaded
+                if (!state.schema) {
+                    state.schema = await fetchSchema(state.collectionId);
+                    if (state.schema) {
+                        const autoMapping = autoDetectPropertyMapping(state.schema);
+                        // Only use auto-mapping if no mapping is set
+                        if (!state.propertyMapping.startDate) {
+                            state.propertyMapping = autoMapping;
+                            saveSettings();
+                        }
+                    }
+                }
+
+                // Check required mappings
+                if (!state.propertyMapping.startDate || !state.propertyMapping.endDate) {
+                    showToast('Please configure property mapping in settings', 'error');
+                    elements.loadingState.style.display = 'none';
+                    openSettingsModal();
+                    return;
+                }
+
+                // Fetch items
+                const items = await fetchCollectionItems(state.collectionId);
+
+                elements.loadingState.style.display = 'none';
+
+                if (items.length === 0) {
+                    showToast('No items found in collection', 'info');
+                    elements.welcomeScreen.style.display = 'flex';
+                    return;
+                }
+
+                // Transform and render
+                const tasks = transformTasksForGantt(items);
+                renderGantt(tasks);
+            }
+
+            // ============================================
+            // Event Handlers
+            // ============================================
+
+            function setupEventListeners() {
+                // Setup button
+                document.getElementById('setup-btn').addEventListener('click', openSettingsModal);
+
+                // Settings button
+                document.getElementById('settings-btn').addEventListener('click', openSettingsModal);
+
+                // Modal close
+                document.getElementById('modal-close').addEventListener('click', closeSettingsModal);
+                document.getElementById('settings-cancel').addEventListener('click', closeSettingsModal);
+
+                // Click outside modal to close
+                elements.settingsModal.addEventListener('click', (e) => {
+                    if (e.target === elements.settingsModal) {
+                        closeSettingsModal();
+                    }
+                });
+
+                // API URL change
+                elements.apiUrlInput.addEventListener('blur', async () => {
+                    const url = elements.apiUrlInput.value.trim();
+                    if (url && url !== state.apiUrl) {
+                        state.apiUrl = url;
+                        state.collections = await fetchCollections();
+                        if (state.collections.length > 0) {
+                            populateCollectionSelect(state.collections);
+                            showToast(`Found ${state.collections.length} collection(s)`, 'success');
+                        } else {
+                            showToast('No collections found', 'info');
+                        }
+                    }
+                });
+
+                // Collection change
+                elements.collectionSelect.addEventListener('change', async () => {
+                    const collectionId = elements.collectionSelect.value;
+                    if (collectionId) {
+                        state.collectionId = collectionId;
+                        const selected = state.collections.find(c => c.key === collectionId);
+                        state.collectionName = selected ? selected.name : '';
+                        elements.collectionName.textContent = state.collectionName;
+
+                        // Fetch schema for this collection
+                        state.schema = await fetchSchema(collectionId);
+                        if (state.schema) {
+                            elements.mappingSection.style.display = 'block';
+                            const autoMapping = autoDetectPropertyMapping(state.schema);
+                            state.propertyMapping = autoMapping;
+                            populateMappingDropdowns(state.schema);
+                        }
+                    }
+                });
+
+                // Settings save
+                document.getElementById('settings-save').addEventListener('click', async () => {
+                    state.apiUrl = elements.apiUrlInput.value.trim();
+                    state.collectionId = elements.collectionSelect.value;
+
+                    const selected = state.collections.find(c => c.key === state.collectionId);
+                    state.collectionName = selected ? selected.name : '';
+                    elements.collectionName.textContent = state.collectionName;
+
+                    state.propertyMapping = getMappingFromForm();
+
+                    // Validate required fields
+                    if (!state.apiUrl) {
+                        showToast('API URL is required', 'error');
+                        return;
+                    }
+                    if (!state.collectionId) {
+                        showToast('Please select a collection', 'error');
+                        return;
+                    }
+                    if (!state.propertyMapping.startDate || !state.propertyMapping.endDate) {
+                        showToast('Start Date and End Date mappings are required', 'error');
+                        return;
+                    }
+
+                    saveSettings();
+                    closeSettingsModal();
+                    showToast('Settings saved', 'success');
+                    await loadGantt();
+                });
+
+                // Theme toggle
+                document.getElementById('theme-light').addEventListener('click', () => setTheme('light'));
+                document.getElementById('theme-dark').addEventListener('click', () => setTheme('dark'));
+
+                // View mode buttons
+                document.querySelectorAll('.view-btn').forEach(btn => {
+                    btn.addEventListener('click', () => setViewMode(btn.dataset.view));
+                });
+
+                // Today button
+                document.getElementById('today-btn').addEventListener('click', scrollToToday);
+
+                // Refresh button
+                document.getElementById('refresh-btn').addEventListener('click', async () => {
+                    showToast('Refreshing...', 'info');
+                    state.schema = null; // Force schema refresh
+                    await loadGantt();
+                });
+
+                // Task popup close
+                document.getElementById('task-popup-close').addEventListener('click', hideTaskPopup);
+                document.addEventListener('click', (e) => {
+                    if (!elements.taskPopup.contains(e.target) &&
+                        !e.target.closest('.bar-wrapper')) {
+                        hideTaskPopup();
+                    }
+                });
+
+                // Keyboard shortcuts
+                document.addEventListener('keydown', (e) => {
+                    // Don't trigger shortcuts when typing in inputs
+                    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+                    switch (e.key.toLowerCase()) {
+                        case 't':
+                            scrollToToday();
+                            break;
+                        case 'd':
+                            setViewMode('Day');
+                            break;
+                        case 'w':
+                            setViewMode('Week');
+                            break;
+                        case 'm':
+                            setViewMode('Month');
+                            break;
+                        case 'r':
+                            document.getElementById('refresh-btn').click();
+                            break;
+                        case ',':
+                            openSettingsModal();
+                            break;
+                        case 'escape':
+                            closeSettingsModal();
+                            hideTaskPopup();
+                            break;
+                        case 'arrowleft':
+                            if (state.gantt) {
+                                document.querySelector('.gantt-container')?.scrollBy(-100, 0);
+                            }
+                            break;
+                        case 'arrowright':
+                            if (state.gantt) {
+                                document.querySelector('.gantt-container')?.scrollBy(100, 0);
+                            }
+                            break;
+                    }
+                });
+            }
+
+            // ============================================
+            // Initialization
+            // ============================================
+
+            async function init() {
+                // Load saved settings
+                loadSettings();
+
+                // Apply theme
+                setTheme(state.theme);
+
+                // Update UI with saved state
+                if (state.collectionName) {
+                    elements.collectionName.textContent = state.collectionName;
+                }
+
+                // Set view mode buttons
+                document.querySelectorAll('.view-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.view === state.viewMode);
+                });
+
+                // Setup event listeners
+                setupEventListeners();
+
+                // If we have saved settings, try to load the gantt
+                if (state.apiUrl && state.collectionId) {
+                    // Fetch collections for settings modal
+                    state.collections = await fetchCollections();
+                    await loadGantt();
+                } else {
+                    elements.welcomeScreen.style.display = 'flex';
+                }
+            }
+
+            // Start the app
+            init();
+        })();
+    </script>
+</body>
+</html>
