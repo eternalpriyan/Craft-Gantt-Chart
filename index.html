@@ -1125,7 +1125,7 @@
 
                 for (const prop of schema.properties) {
                     const name = prop.name.toLowerCase();
-                    const type = prop.type;
+                    const type = (prop.type || '').toLowerCase();
 
                     // Start Date detection
                     if (type === 'date' && (name.includes('start') || name === 'begin' || name === 'from')) {
@@ -1144,7 +1144,7 @@
                         mapping.dependencies = prop.name;
                     }
                     // Status detection
-                    else if ((type === 'singleSelect' || type === 'select') &&
+                    else if ((type === 'singleselect' || type === 'select') &&
                              (name.includes('status') || name === 'state')) {
                         mapping.status = prop.name;
                     }
