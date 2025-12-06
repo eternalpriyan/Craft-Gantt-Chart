@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,47 +9,83 @@
     <!-- Frappe Gantt -->
     <script src="https://cdn.jsdelivr.net/npm/frappe-gantt@0.6.1/dist/frappe-gantt.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/frappe-gantt@0.6.1/dist/frappe-gantt.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            /* Light theme */
+            /* Minimal Light (Zinc Palette) */
             --bg-primary: #ffffff;
-            --bg-secondary: #f5f5f5;
-            --bg-tertiary: #e8e8e8;
-            --text-primary: #1a1a1a;
-            --text-secondary: #666666;
-            --text-muted: #999999;
-            --accent: #0066cc;
-            --accent-hover: #0052a3;
-            --bar-default: #4a90d9;
-            --bar-not-started: #9e9e9e;
-            --bar-in-progress: #f5a623;
-            --bar-done: #7ed321;
-            --bar-blocked: #d0021b;
+            --bg-secondary: #f4f4f5;
+            /* Zinc-100 */
+            --bg-tertiary: #e4e4e7;
+            /* Zinc-200 */
+            --text-primary: #18181b;
+            /* Zinc-900 */
+            --text-secondary: #71717a;
+            /* Zinc-500 */
+            --text-muted: #a1a1aa;
+            /* Zinc-400 */
+
+            --border-color: #e4e4e7;
+            /* Zinc-200 */
+
+            /* Accents */
+            --brand-primary: #18181b;
+            /* Black for actions */
+            --brand-text: #ffffff;
+
+            /* Functional Colors (Muted Pastels) */
+            --bar-default: #52525b;
+            /* Zinc-600 */
+            --bar-not-started: #d4d4d8;
+            /* Zinc-300 */
+            --bar-in-progress: #60a5fa;
+            /* Blue-400 */
+            --bar-done: #34d399;
+            /* Emerald-400 */
+            --bar-blocked: #f87171;
+            /* Red-400 */
+
+            /* UI */
+            --radius: 8px;
+            --radius-pill: 9999px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+
+            --modal-overlay: rgba(255, 255, 255, 0.8);
+
+            --toast-success: #34d399;
+            --toast-error: #f87171;
+            --toast-info: #60a5fa;
+
+            /* Gantt Specifics (Clean Lines) */
+            --grid-line: #f4f4f5;
             --weekend-bg: #fafafa;
-            --grid-line: #e0e0e0;
-            --border-color: #ddd;
-            --modal-overlay: rgba(0, 0, 0, 0.5);
-            --shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-            --toast-success: #7ed321;
-            --toast-error: #d0021b;
-            --toast-info: #4a90d9;
         }
 
         [data-theme="dark"] {
-            --bg-primary: #1e1e1e;
-            --bg-secondary: #2d2d2d;
-            --bg-tertiary: #3d3d3d;
-            --text-primary: #ffffff;
-            --text-secondary: #b0b0b0;
-            --text-muted: #777777;
-            --accent: #4a90d9;
-            --accent-hover: #5a9fe8;
-            --weekend-bg: #252525;
-            --grid-line: #3d3d3d;
-            --border-color: #444;
-            --modal-overlay: rgba(0, 0, 0, 0.7);
-            --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            --bg-primary: #18181b;
+            /* Zinc-950 */
+            --bg-secondary: #27272a;
+            /* Zinc-900 */
+            --bg-tertiary: #3f3f46;
+            /* Zinc-700 */
+            --text-primary: #f4f4f5;
+            /* Zinc-100 */
+            --text-secondary: #a1a1aa;
+            /* Zinc-400 */
+            --text-muted: #52525b;
+            /* Zinc-600 */
+
+            --border-color: #27272a;
+
+            --brand-primary: #ffffff;
+            --brand-text: #000000;
+
+            --modal-overlay: rgba(0, 0, 0, 0.8);
+
+            --grid-line: #27272a;
+            --weekend-bg: #1e1e21;
         }
 
         * {
@@ -58,11 +95,13 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            font-family: 'Inter', -apple-system, sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
             min-height: 100vh;
+            line-height: 1.5;
             transition: background 0.3s, color 0.3s;
+            -webkit-font-smoothing: antialiased;
         }
 
         /* Header */
@@ -70,9 +109,9 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 12px 20px;
-            background: var(--bg-secondary);
-            border-bottom: 1px solid var(--border-color);
+            padding: 24px 40px;
+            background: var(--bg-primary);
+            /* No border for minimalism */
             position: sticky;
             top: 0;
             z-index: 100;
@@ -81,130 +120,131 @@
         .header-left {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 24px;
         }
 
         .logo {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 600;
+            letter-spacing: -0.02em;
             color: var(--text-primary);
         }
 
         .collection-name {
-            font-size: 14px;
+            font-size: 13px;
             color: var(--text-secondary);
+            font-weight: 500;
+            background: var(--bg-secondary);
             padding: 4px 12px;
-            background: var(--bg-tertiary);
-            border-radius: 4px;
+            border-radius: var(--radius-pill);
         }
 
+        /* View Toggle (Segmented Control style) */
         .header-center {
             display: flex;
-            gap: 4px;
+            background: var(--bg-secondary);
+            padding: 4px;
+            border-radius: var(--radius-pill);
         }
 
         .view-btn {
-            padding: 6px 14px;
-            border: 1px solid var(--border-color);
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            cursor: pointer;
-            font-size: 13px;
-            transition: all 0.2s;
-        }
-
-        .view-btn:first-child {
-            border-radius: 4px 0 0 4px;
-        }
-
-        .view-btn:last-child {
-            border-radius: 0 4px 4px 0;
-        }
-
-        .view-btn:not(:last-child) {
-            border-right: none;
-        }
-
-        .view-btn:hover {
-            background: var(--bg-tertiary);
-        }
-
-        .view-btn.active {
-            background: var(--accent);
-            color: white;
-            border-color: var(--accent);
-        }
-
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .icon-btn {
-            width: 36px;
-            height: 36px;
+            padding: 6px 20px;
             border: none;
             background: transparent;
             color: var(--text-secondary);
             cursor: pointer;
-            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            border-radius: var(--radius-pill);
+            transition: all 0.2s;
+        }
+
+        .view-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .view-btn.active {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Actions */
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: var(--radius-pill);
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s;
             font-size: 18px;
+            transition: all 0.2s;
         }
 
         .icon-btn:hover {
-            background: var(--bg-tertiary);
+            background: var(--bg-secondary);
             color: var(--text-primary);
         }
 
         .today-btn {
-            padding: 6px 14px;
+            padding: 8px 16px;
             border: 1px solid var(--border-color);
-            background: var(--bg-primary);
-            color: var(--text-primary);
+            background: transparent;
+            color: var(--text-secondary);
             cursor: pointer;
             font-size: 13px;
-            border-radius: 4px;
+            font-weight: 500;
+            border-radius: var(--radius-pill);
             transition: all 0.2s;
         }
 
         .today-btn:hover {
-            background: var(--bg-tertiary);
+            border-color: var(--text-secondary);
+            color: var(--text-primary);
         }
 
         /* Main Content */
         .main-content {
-            padding: 20px;
-            min-height: calc(100vh - 61px);
+            padding: 0 40px 40px 40px;
+            min-height: calc(100vh - 90px);
         }
 
-        /* Gantt Container */
+        /* Gantt Container (Clean) */
         #gantt-container {
-            background: var(--bg-primary);
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            overflow: hidden;
+            /* Transparent bg to blend in */
+            background: transparent;
+            border-radius: var(--radius);
+            /* No border */
         }
 
-        /* Frappe Gantt Overrides */
+        /* Frappe Gantt Overrides for "Zen" Look */
         .gantt .grid-background {
-            fill: var(--bg-primary);
+            fill: transparent;
         }
 
         .gantt .grid-header {
-            fill: var(--bg-secondary);
+            fill: var(--bg-primary);
+            stroke: none;
         }
 
         .gantt .grid-row {
-            fill: var(--bg-primary);
+            fill: transparent;
         }
 
         .gantt .grid-row:nth-child(even) {
             fill: var(--bg-secondary);
+            fill-opacity: 0.3;
+            /* Very subtle */
         }
 
         .gantt .row-line {
@@ -216,42 +256,46 @@
         }
 
         .gantt .today-highlight {
-            fill: rgba(74, 144, 217, 0.1);
+            fill: var(--brand-primary);
+            opacity: 0.03;
         }
 
-        .gantt .lower-text, .gantt .upper-text {
+        .gantt .lower-text,
+        .gantt .upper-text {
             fill: var(--text-secondary);
             font-family: inherit;
+            font-weight: 500;
+            font-size: 11px;
         }
 
+        /* The Bars */
         .gantt .bar {
             fill: var(--bar-default);
+            stroke: none;
+        }
+
+        /* Rounded bars */
+        .gantt .bar-wrapper rect {
+            rx: 6;
+            ry: 6;
         }
 
         .gantt .bar-progress {
-            fill: rgba(255, 255, 255, 0.3);
+            fill: rgba(255, 255, 255, 0.2);
         }
 
         .gantt .bar-label {
             fill: white;
             font-family: inherit;
             font-weight: 500;
+            font-size: 12px;
         }
 
         .gantt .bar-wrapper:hover .bar {
-            fill-opacity: 0.9;
+            filter: brightness(1.1);
         }
 
-        .gantt .handle {
-            fill: white;
-            opacity: 0;
-        }
-
-        .gantt .bar-wrapper:hover .handle {
-            opacity: 1;
-        }
-
-        /* Status-based bar colors */
+        /* Status Colors */
         .gantt .bar-not-started .bar {
             fill: var(--bar-not-started);
         }
@@ -268,14 +312,15 @@
             fill: var(--bar-blocked);
         }
 
-        /* Arrow (dependency) styling */
+        /* Arrows (Clean lines) */
         .gantt .arrow {
-            stroke: var(--text-muted);
-            stroke-width: 1.5;
+            stroke: var(--text-secondary);
+            stroke-width: 1;
             fill: none;
+            opacity: 0.5;
         }
 
-        /* Modal */
+        /* Modal (Floaty) */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -283,6 +328,7 @@
             right: 0;
             bottom: 0;
             background: var(--modal-overlay);
+            backdrop-filter: blur(4px);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -299,31 +345,32 @@
 
         .modal {
             background: var(--bg-primary);
-            border-radius: 12px;
-            box-shadow: var(--shadow);
-            max-width: 500px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-lg);
+            max-width: 480px;
             width: 90%;
             max-height: 90vh;
             overflow-y: auto;
-            transform: translateY(-20px);
-            transition: transform 0.3s;
+            transform: scale(0.95);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid var(--border-color);
         }
 
         .modal-overlay.active .modal {
-            transform: translateY(0);
+            transform: scale(1);
         }
 
         .modal-header {
-            padding: 20px 24px;
-            border-bottom: 1px solid var(--border-color);
+            padding: 24px 32px;
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
 
         .modal-title {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 600;
+            letter-spacing: -0.02em;
         }
 
         .modal-close {
@@ -333,76 +380,80 @@
             background: transparent;
             color: var(--text-secondary);
             cursor: pointer;
-            border-radius: 6px;
+            border-radius: 50%;
+            font-size: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
             transition: all 0.2s;
         }
 
         .modal-close:hover {
-            background: var(--bg-tertiary);
+            background: var(--bg-secondary);
             color: var(--text-primary);
         }
 
         .modal-body {
-            padding: 24px;
+            padding: 0 32px 32px 32px;
         }
 
+        /* Forms */
         .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group:last-child {
-            margin-bottom: 0;
+            margin-bottom: 24px;
         }
 
         .form-label {
             display: block;
             font-size: 13px;
             font-weight: 500;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             color: var(--text-secondary);
         }
 
-        .form-input, .form-select {
+        .form-input,
+        .form-select {
             width: 100%;
-            padding: 10px 12px;
+            padding: 12px 16px;
             border: 1px solid var(--border-color);
-            border-radius: 6px;
+            border-radius: 12px;
             background: var(--bg-primary);
             color: var(--text-primary);
             font-size: 14px;
-            transition: border-color 0.2s;
+            font-family: inherit;
+            transition: all 0.2s;
         }
 
-        .form-input:focus, .form-select:focus {
+        .form-input:hover,
+        .form-select:hover {
+            border-color: var(--text-secondary);
+        }
+
+        .form-input:focus,
+        .form-select:focus {
             outline: none;
-            border-color: var(--accent);
-        }
-
-        .form-input::placeholder {
-            color: var(--text-muted);
+            border-color: var(--brand-primary);
         }
 
         .form-help {
             font-size: 12px;
             color: var(--text-muted);
-            margin-top: 4px;
+            margin-top: 6px;
         }
 
+        /* Buttons */
         .modal-footer {
-            padding: 16px 24px;
+            padding: 24px 32px;
             border-top: 1px solid var(--border-color);
             display: flex;
             justify-content: flex-end;
             gap: 12px;
+            background: var(--bg-secondary);
+            border-radius: 0 0 20px 20px;
         }
 
         .btn {
-            padding: 10px 20px;
-            border-radius: 6px;
+            padding: 10px 24px;
+            border-radius: var(--radius-pill);
             font-size: 14px;
             font-weight: 500;
             cursor: pointer;
@@ -411,108 +462,37 @@
         }
 
         .btn-primary {
-            background: var(--accent);
-            color: white;
+            background: var(--brand-primary);
+            color: var(--brand-text);
         }
 
         .btn-primary:hover {
-            background: var(--accent-hover);
+            opacity: 0.9;
+            transform: translateY(-1px);
         }
 
         .btn-secondary {
-            background: var(--bg-tertiary);
+            background: transparent;
             color: var(--text-primary);
+            border: 1px solid var(--border-color);
         }
 
         .btn-secondary:hover {
-            background: var(--border-color);
-        }
-
-        /* Theme Toggle */
-        .theme-toggle {
-            display: flex;
-            gap: 4px;
-            padding: 4px;
-            background: var(--bg-tertiary);
-            border-radius: 6px;
-        }
-
-        .theme-toggle button {
-            padding: 6px 12px;
-            border: none;
-            background: transparent;
-            color: var(--text-secondary);
-            cursor: pointer;
-            border-radius: 4px;
-            font-size: 13px;
-            transition: all 0.2s;
-        }
-
-        .theme-toggle button.active {
             background: var(--bg-primary);
-            color: var(--text-primary);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-color: var(--text-primary);
         }
 
-        /* Toast */
-        .toast-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 2000;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .toast {
-            padding: 12px 16px;
-            background: var(--bg-secondary);
-            border-radius: 8px;
-            box-shadow: var(--shadow);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 14px;
-            animation: slideIn 0.3s ease;
-            border-left: 4px solid var(--toast-info);
-        }
-
-        .toast.success {
-            border-left-color: var(--toast-success);
-        }
-
-        .toast.error {
-            border-left-color: var(--toast-error);
-        }
-
-        .toast.info {
-            border-left-color: var(--toast-info);
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        /* Task Popup */
+        /* Popup */
         .task-popup {
             position: fixed;
             background: var(--bg-primary);
-            border-radius: 8px;
-            box-shadow: var(--shadow);
-            padding: 16px;
+            border-radius: 16px;
+            box-shadow: var(--shadow-lg);
+            padding: 20px;
             z-index: 500;
-            min-width: 280px;
-            max-width: 350px;
-            display: none;
             border: 1px solid var(--border-color);
+            min-width: 300px;
+            display: none;
         }
 
         .task-popup.active {
@@ -520,37 +500,16 @@
         }
 
         .task-popup-title {
+            font-size: 16px;
             font-weight: 600;
-            font-size: 16px;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
             padding-right: 24px;
-        }
-
-        .task-popup-close {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            width: 24px;
-            height: 24px;
-            border: none;
-            background: transparent;
-            color: var(--text-secondary);
-            cursor: pointer;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-        }
-
-        .task-popup-close:hover {
-            background: var(--bg-tertiary);
         }
 
         .task-popup-row {
             display: flex;
             justify-content: space-between;
-            padding: 6px 0;
+            padding: 8px 0;
             font-size: 13px;
             border-bottom: 1px solid var(--border-color);
         }
@@ -568,33 +527,33 @@
         }
 
         .status-badge {
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 500;
+            padding: 2px 10px;
+            border-radius: var(--radius-pill);
+            font-size: 11px;
+            font-weight: 600;
         }
 
         .status-badge.not-started {
-            background: rgba(158, 158, 158, 0.2);
-            color: var(--bar-not-started);
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
         }
 
         .status-badge.in-progress {
-            background: rgba(245, 166, 35, 0.2);
+            background: rgba(96, 165, 250, 0.1);
             color: var(--bar-in-progress);
         }
 
         .status-badge.done {
-            background: rgba(126, 211, 33, 0.2);
+            background: rgba(52, 211, 153, 0.1);
             color: var(--bar-done);
         }
 
         .status-badge.blocked {
-            background: rgba(208, 2, 27, 0.2);
+            background: rgba(248, 113, 113, 0.1);
             color: var(--bar-blocked);
         }
 
-        /* Welcome Screen */
+        /* Welcome */
         .welcome-screen {
             display: flex;
             flex-direction: column;
@@ -606,122 +565,75 @@
         }
 
         .welcome-icon {
-            font-size: 64px;
+            font-size: 48px;
             margin-bottom: 24px;
+            opacity: 0.8;
+            filter: grayscale(1);
         }
 
         .welcome-title {
-            font-size: 28px;
-            font-weight: 600;
-            margin-bottom: 12px;
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            margin-bottom: 16px;
         }
 
-        .welcome-subtitle {
-            font-size: 16px;
-            color: var(--text-secondary);
-            margin-bottom: 32px;
-            max-width: 400px;
-        }
-
-        /* Loading */
-        .loading {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 60vh;
-            gap: 16px;
-        }
-
+        /* Spinner */
         .spinner {
             width: 40px;
             height: 40px;
-            border: 3px solid var(--border-color);
-            border-top-color: var(--accent);
+            border: 3px solid var(--bg-tertiary);
+            border-top-color: var(--brand-primary);
             border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Property Mapping Section */
-        .mapping-section {
-            background: var(--bg-secondary);
-            border-radius: 8px;
-            padding: 16px;
-            margin-top: 16px;
-        }
-
-        .mapping-title {
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 12px;
-        }
-
-        .mapping-grid {
-            display: grid;
-            gap: 12px;
-        }
-
-        .mapping-row {
-            display: grid;
-            grid-template-columns: 120px 1fr;
-            gap: 12px;
-            align-items: center;
-        }
-
-        .mapping-label {
-            font-size: 13px;
-            color: var(--text-secondary);
-        }
-
-        .mapping-label.required::after {
-            content: '*';
-            color: var(--bar-blocked);
-            margin-left: 4px;
-        }
-
-        /* Keyboard shortcuts hint */
-        .shortcuts-hint {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-
-        .shortcuts-hint kbd {
-            padding: 2px 6px;
-            background: var(--bg-tertiary);
-            border-radius: 4px;
-            font-family: inherit;
-            margin: 0 2px;
+            animation: spin 0.8s ease-in-out infinite;
         }
 
         /* Responsive */
         @media (max-width: 768px) {
             .header {
+                padding: 16px;
                 flex-wrap: wrap;
-                gap: 12px;
+                gap: 16px;
             }
 
-            .header-left, .header-center, .header-right {
-                width: 100%;
-                justify-content: center;
-            }
-
-            .shortcuts-hint {
-                display: none;
+            .main-content {
+                padding: 16px;
             }
 
             .collection-name {
                 display: none;
             }
         }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            display: flex;
+            background: var(--bg-secondary);
+            padding: 4px;
+            border-radius: 12px;
+            width: fit-content;
+        }
+
+        .theme-toggle button {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .theme-toggle button.active {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
+
 <body>
     <!-- Header -->
     <header class="header">
@@ -747,7 +659,8 @@
         <div class="welcome-screen" id="welcome-screen">
             <div class="welcome-icon">&#128202;</div>
             <h1 class="welcome-title">Welcome to Craft Gantt</h1>
-            <p class="welcome-subtitle">Connect to your Craft collection to visualize your project timeline as an interactive Gantt chart.</p>
+            <p class="welcome-subtitle">Connect to your Craft collection to visualize your project timeline as an
+                interactive Gantt chart.</p>
             <button class="btn btn-primary" id="setup-btn">Connect to Craft</button>
         </div>
 
@@ -800,7 +713,7 @@
                 <div class="form-group">
                     <label class="form-label">Craft API URL</label>
                     <input type="text" class="form-input" id="api-url-input"
-                           placeholder="https://connect.craft.do/links/{linkId}/api/v1">
+                        placeholder="https://connect.craft.do/links/{linkId}/api/v1">
                     <p class="form-help">Enter your Craft Multi-Document API URL</p>
                 </div>
 
@@ -869,7 +782,7 @@
         // Craft Gantt - Main Application
         // ============================================
 
-        (function() {
+        (function () {
             'use strict';
 
             // State
@@ -1174,7 +1087,7 @@
                     }
                     // Status detection (check name/title and description for "single select")
                     else if ((name.includes('status') || title.includes('status') || name === 'state') &&
-                             (desc.includes('select') || type === 'string')) {
+                        (desc.includes('select') || type === 'string')) {
                         mapping.status = prop.name;
                     }
                     // Progress detection
@@ -1192,7 +1105,7 @@
 
             function populateMappingDropdowns(schema) {
                 const mappingFields = ['map-start-date', 'map-end-date', 'map-dependencies',
-                                       'map-status', 'map-progress', 'map-assignee'];
+                    'map-status', 'map-progress', 'map-assignee'];
                 const mappingKeys = ['startDate', 'endDate', 'dependencies', 'status', 'progress', 'assignee'];
 
                 if (!schema || !schema.properties) {
@@ -1265,7 +1178,9 @@
                     // Resolve dependencies (can be comma-separated titles or IDs)
                     let dependencies = '';
                     if (mapping.dependencies && props[mapping.dependencies]) {
-                        const deps = props[mapping.dependencies].split(',')
+                        // Ensure it's a string before splitting
+                        const depString = String(props[mapping.dependencies]);
+                        const deps = depString.split(',')
                             .map(d => d.trim())
                             .filter(d => d)
                             .map(d => taskMap.get(d) || d)
@@ -1448,9 +1363,11 @@
 
                 collections.forEach(col => {
                     const option = document.createElement('option');
-                    option.value = col.key;
+                    // API returns 'id' but docs said 'key' - handle both
+                    const id = col.id || col.key;
+                    option.value = id;
                     option.textContent = col.name;
-                    if (col.key === state.collectionId) {
+                    if (id === state.collectionId) {
                         option.selected = true;
                     }
                     select.appendChild(option);
@@ -1507,8 +1424,15 @@
                 }
 
                 // Transform and render
-                const tasks = transformTasksForGantt(items);
-                renderGantt(tasks);
+                try {
+                    const tasks = transformTasksForGantt(items);
+                    renderGantt(tasks);
+                } catch (error) {
+                    console.error('Error processing tasks:', error);
+                    showToast('Error processing tasks: ' + error.message, 'error');
+                    elements.loadingState.style.display = 'none';
+                    elements.welcomeScreen.style.display = 'flex';
+                }
             }
 
             // ============================================
@@ -1535,7 +1459,13 @@
 
                 // API URL change
                 elements.apiUrlInput.addEventListener('blur', async () => {
-                    const url = elements.apiUrlInput.value.trim();
+                    let url = elements.apiUrlInput.value.trim();
+                    // Remove trailing slash if present
+                    if (url.endsWith('/')) {
+                        url = url.slice(0, -1);
+                        elements.apiUrlInput.value = url;
+                    }
+
                     if (url && url !== state.apiUrl) {
                         state.apiUrl = url;
                         state.collections = await fetchCollections();
@@ -1553,7 +1483,7 @@
                     const collectionId = elements.collectionSelect.value;
                     if (collectionId) {
                         state.collectionId = collectionId;
-                        const selected = state.collections.find(c => c.key === collectionId);
+                        const selected = state.collections.find(c => (c.id || c.key) === collectionId);
                         state.collectionName = selected ? selected.name : '';
                         elements.collectionName.textContent = state.collectionName;
 
@@ -1573,7 +1503,7 @@
                     state.apiUrl = elements.apiUrlInput.value.trim();
                     state.collectionId = elements.collectionSelect.value;
 
-                    const selected = state.collections.find(c => c.key === state.collectionId);
+                    const selected = state.collections.find(c => (c.id || c.key) === state.collectionId);
                     state.collectionName = selected ? selected.name : '';
                     elements.collectionName.textContent = state.collectionName;
 
@@ -1708,4 +1638,5 @@
         })();
     </script>
 </body>
+
 </html>
