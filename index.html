@@ -683,6 +683,27 @@
             margin-left: 4px;
         }
 
+        .form-select.invalid {
+            border-color: var(--bar-blocked);
+            background-color: rgba(208, 2, 27, 0.05);
+        }
+
+        .form-select.invalid:focus {
+            border-color: var(--bar-blocked);
+            box-shadow: 0 0 0 2px rgba(208, 2, 27, 0.2);
+        }
+
+        .mapping-error {
+            color: var(--bar-blocked);
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .mapping-error.visible {
+            display: block;
+        }
+
         /* Keyboard shortcuts hint */
         .shortcuts-hint {
             position: fixed;
@@ -816,11 +837,17 @@
                     <div class="mapping-grid">
                         <div class="mapping-row">
                             <span class="mapping-label required">Start Date</span>
-                            <select class="form-select" id="map-start-date"></select>
+                            <div>
+                                <select class="form-select" id="map-start-date" required></select>
+                                <div class="mapping-error" id="start-date-error">Start Date is required</div>
+                            </div>
                         </div>
                         <div class="mapping-row">
                             <span class="mapping-label required">End Date</span>
-                            <select class="form-select" id="map-end-date"></select>
+                            <div>
+                                <select class="form-select" id="map-end-date" required></select>
+                                <div class="mapping-error" id="end-date-error">End Date is required</div>
+                            </div>
                         </div>
                         <div class="mapping-row">
                             <span class="mapping-label">Dependencies</span>
@@ -1537,6 +1564,21 @@
                     }
                 });
 
+                // Clear validation errors when date mappings are selected
+                document.getElementById('map-start-date').addEventListener('change', (e) => {
+                    if (e.target.value) {
+                        e.target.classList.remove('invalid');
+                        document.getElementById('start-date-error').classList.remove('visible');
+                    }
+                });
+
+                document.getElementById('map-end-date').addEventListener('change', (e) => {
+                    if (e.target.value) {
+                        e.target.classList.remove('invalid');
+                        document.getElementById('end-date-error').classList.remove('visible');
+                    }
+                });
+
                 // Settings save
                 document.getElementById('settings-save').addEventListener('click', async () => {
                     state.apiUrl = elements.apiUrlInput.value.trim();
@@ -1557,7 +1599,34 @@
                         showToast('Please select a collection', 'error');
                         return;
                     }
-                    if (!state.propertyMapping.startDate || !state.propertyMapping.endDate) {
+
+                    // Validate date mappings with visual feedback
+                    const startDateSelect = document.getElementById('map-start-date');
+                    const endDateSelect = document.getElementById('map-end-date');
+                    const startDateError = document.getElementById('start-date-error');
+                    const endDateError = document.getElementById('end-date-error');
+
+                    let hasValidationErrors = false;
+
+                    // Clear previous validation states
+                    startDateSelect.classList.remove('invalid');
+                    endDateSelect.classList.remove('invalid');
+                    startDateError.classList.remove('visible');
+                    endDateError.classList.remove('visible');
+
+                    if (!state.propertyMapping.startDate) {
+                        startDateSelect.classList.add('invalid');
+                        startDateError.classList.add('visible');
+                        hasValidationErrors = true;
+                    }
+
+                    if (!state.propertyMapping.endDate) {
+                        endDateSelect.classList.add('invalid');
+                        endDateError.classList.add('visible');
+                        hasValidationErrors = true;
+                    }
+
+                    if (hasValidationErrors) {
                         showToast('Start Date and End Date mappings are required', 'error');
                         return;
                     }
