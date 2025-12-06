@@ -1055,8 +1055,23 @@
                 }
             }
 
+            function getSchemaFromCollection(collectionId) {
+                // Get schema from the already-fetched collections data
+                const collection = state.collections.find(c => c.key === collectionId);
+                return collection ? collection.schema : null;
+            }
+
             async function fetchSchema(collectionId) {
-                if (!state.apiUrl || !collectionId) return null;
+                if (!collectionId) return null;
+
+                // First try to get schema from cached collections
+                const cachedSchema = getSchemaFromCollection(collectionId);
+                if (cachedSchema && cachedSchema.properties && cachedSchema.properties.length > 0) {
+                    return cachedSchema;
+                }
+
+                // Fall back to API call if no cached schema
+                if (!state.apiUrl) return null;
 
                 try {
                     const data = await fetchWithRetry(
@@ -1064,6 +1079,10 @@
                     );
                     return data;
                 } catch (error) {
+                    // If API fails, return cached schema even if empty
+                    if (cachedSchema) {
+                        return cachedSchema;
+                    }
                     showToast('Failed to fetch schema: ' + error.message, 'error');
                     return null;
                 }
@@ -1442,6 +1461,11 @@
                 elements.welcomeScreen.style.display = 'none';
                 elements.loadingState.style.display = 'flex';
                 elements.ganttContainer.style.display = 'none';
+
+                // Ensure collections are loaded (needed for schema)
+                if (state.collections.length === 0) {
+                    state.collections = await fetchCollections();
+                }
 
                 // Fetch schema if not already loaded
                 if (!state.schema) {
