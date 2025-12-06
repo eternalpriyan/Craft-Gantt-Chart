@@ -1055,34 +1055,42 @@
                 }
             }
 
-            function getSchemaFromCollection(collectionId) {
-                // Get schema from the already-fetched collections data
-                const collection = state.collections.find(c => c.key === collectionId);
-                return collection ? collection.schema : null;
+            function parseJsonSchema(jsonSchema) {
+                // Parse JSON Schema format into simple properties array
+                // JSON Schema structure: properties.items.items.properties.properties.properties
+                const properties = [];
+
+                try {
+                    const propsSchema = jsonSchema?.properties?.items?.items?.properties?.properties?.properties;
+                    if (!propsSchema) return properties;
+
+                    for (const [key, prop] of Object.entries(propsSchema)) {
+                        properties.push({
+                            name: key,
+                            title: prop.title || key,
+                            type: prop.format || prop.type, // Use format (e.g., "date") if available
+                            description: prop.description || ''
+                        });
+                    }
+                } catch (e) {
+                    console.error('Failed to parse JSON Schema:', e);
+                }
+
+                return properties;
             }
 
             async function fetchSchema(collectionId) {
-                if (!collectionId) return null;
-
-                // First try to get schema from cached collections
-                const cachedSchema = getSchemaFromCollection(collectionId);
-                if (cachedSchema && cachedSchema.properties && cachedSchema.properties.length > 0) {
-                    return cachedSchema;
-                }
-
-                // Fall back to API call if no cached schema
-                if (!state.apiUrl) return null;
+                if (!collectionId || !state.apiUrl) return null;
 
                 try {
                     const data = await fetchWithRetry(
-                        `${state.apiUrl}/collections/${collectionId}/schema?format=schema`
+                        `${state.apiUrl}/collections/${collectionId}/schema?format=json-schema-items`
                     );
-                    return data;
+
+                    // Parse JSON Schema format into simple properties array
+                    const properties = parseJsonSchema(data);
+                    return { properties };
                 } catch (error) {
-                    // If API fails, return cached schema even if empty
-                    if (cachedSchema) {
-                        return cachedSchema;
-                    }
                     showToast('Failed to fetch schema: ' + error.message, 'error');
                     return null;
                 }
@@ -1143,15 +1151,17 @@
                 if (!schema || !schema.properties) return mapping;
 
                 for (const prop of schema.properties) {
-                    const name = prop.name.toLowerCase();
+                    const name = (prop.name || '').toLowerCase();
+                    const title = (prop.title || '').toLowerCase();
                     const type = (prop.type || '').toLowerCase();
+                    const desc = (prop.description || '').toLowerCase();
 
-                    // Start Date detection
-                    if (type === 'date' && (name.includes('start') || name === 'begin' || name === 'from')) {
+                    // Start Date detection (check both name and title)
+                    if (type === 'date' && (name.includes('start') || title.includes('start') || name === 'begin' || name === 'from')) {
                         mapping.startDate = prop.name;
                     }
-                    // End Date detection
-                    else if (type === 'date' && (name.includes('end') || name === 'due' || name === 'to' || name === 'deadline')) {
+                    // End Date detection (check both name and title)
+                    else if (type === 'date' && (name.includes('end') || title.includes('end') || name === 'due' || title.includes('due') || name === 'deadline')) {
                         mapping.endDate = prop.name;
                     }
                     // If only one date field and no specific match
@@ -1159,20 +1169,20 @@
                         mapping.startDate = prop.name;
                     }
                     // Dependencies detection
-                    else if (name.includes('depend') || name.includes('block') || name.includes('prerequisite')) {
+                    else if (name.includes('depend') || title.includes('depend') || name.includes('prerequisite')) {
                         mapping.dependencies = prop.name;
                     }
-                    // Status detection
-                    else if ((type === 'singleselect' || type === 'select') &&
-                             (name.includes('status') || name === 'state')) {
+                    // Status detection (check name/title and description for "single select")
+                    else if ((name.includes('status') || title.includes('status') || name === 'state') &&
+                             (desc.includes('select') || type === 'string')) {
                         mapping.status = prop.name;
                     }
                     // Progress detection
-                    else if (type === 'number' && (name.includes('progress') || name.includes('percent') || name === 'completion')) {
+                    else if (type === 'number' && (name.includes('progress') || title.includes('progress') || name.includes('percent'))) {
                         mapping.progress = prop.name;
                     }
                     // Assignee detection
-                    else if (name.includes('assign') || name === 'owner' || name === 'person' || name === 'responsible') {
+                    else if (name.includes('assign') || title.includes('assign') || name === 'owner' || name === 'person') {
                         mapping.assignee = prop.name;
                     }
                 }
@@ -1202,7 +1212,9 @@
                     for (const prop of schema.properties) {
                         const option = document.createElement('option');
                         option.value = prop.name;
-                        option.textContent = `${prop.name} (${prop.type})`;
+                        // Show title if available, otherwise show name
+                        const displayName = prop.title || prop.name;
+                        option.textContent = `${displayName} (${prop.type})`;
                         select.appendChild(option);
                     }
 
@@ -1461,11 +1473,6 @@
                 elements.welcomeScreen.style.display = 'none';
                 elements.loadingState.style.display = 'flex';
                 elements.ganttContainer.style.display = 'none';
-
-                // Ensure collections are loaded (needed for schema)
-                if (state.collections.length === 0) {
-                    state.collections = await fetchCollections();
-                }
 
                 // Fetch schema if not already loaded
                 if (!state.schema) {
