@@ -1125,18 +1125,27 @@
 
                 for (const prop of schema.properties) {
                     const name = prop.name.toLowerCase();
-                    const type = prop.type;
+                    const type = (prop.type || '').toLowerCase();
+                    const isDateType = type === 'date' || type === 'datetime' || type === 'time';
 
-                    // Start Date detection
-                    if (type === 'date' && (name.includes('start') || name === 'begin' || name === 'from')) {
+                    // Start Date detection - check exact match first, then pattern match
+                    if (name === 'start date' || name === 'startdate') {
                         mapping.startDate = prop.name;
                     }
-                    // End Date detection
-                    else if (type === 'date' && (name.includes('end') || name === 'due' || name === 'to' || name === 'deadline')) {
+                    // End Date detection - check exact match first
+                    else if (name === 'end date' || name === 'enddate' || name === 'due date' || name === 'duedate') {
+                        mapping.endDate = prop.name;
+                    }
+                    // Start Date by type + pattern
+                    else if (isDateType && (name.includes('start') || name === 'begin' || name === 'from')) {
+                        mapping.startDate = prop.name;
+                    }
+                    // End Date by type + pattern
+                    else if (isDateType && (name.includes('end') || name.includes('due') || name === 'to' || name.includes('deadline'))) {
                         mapping.endDate = prop.name;
                     }
                     // If only one date field and no specific match
-                    else if (type === 'date' && !mapping.startDate) {
+                    else if (isDateType && !mapping.startDate) {
                         mapping.startDate = prop.name;
                     }
                     // Dependencies detection
@@ -1144,7 +1153,7 @@
                         mapping.dependencies = prop.name;
                     }
                     // Status detection
-                    else if ((type === 'singleSelect' || type === 'select') &&
+                    else if ((type === 'singleselect' || type === 'select' || type === 'single_select' || type === 'enum') &&
                              (name.includes('status') || name === 'state')) {
                         mapping.status = prop.name;
                     }
